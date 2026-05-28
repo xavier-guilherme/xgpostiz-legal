@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XGPostiz – Demo de integração TikTok</title>
+  <style>
+    :root {
+      --bg: #f7f6f2;
+      --surface: #ffffff;
+      --text: #222222;
+      --muted: #666666;
+      --primary: #01696f;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #ffffff, var(--bg));
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      max-width: 760px;
+      width: 100%;
+      background: var(--surface);
+      padding: 32px 24px 28px;
+      border-radius: var(--radius);
+      box-shadow: 0 20px 55px rgba(15, 24, 32, 0.08);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .logo-mark {
+      width: 56px;
+      height: 56px;
+      border-radius: 20px;
+      background: rgba(1, 105, 111, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 26px;
+    }
+    h1 {
+      font-size: 1.7rem;
+      margin-bottom: 2px;
+    }
+    .tagline {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .body {
+      margin-top: 18px;
+      font-size: 0.98rem;
+      line-height: 1.7;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(1, 105, 111, 0.06);
+      color: var(--primary);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 10px;
+    }
+    .pill span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+    .step-list {
+      margin-top: 10px;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    .step-list li { margin-bottom: 4px; }
+    .buttons {
+      margin-top: 22px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    button {
+      border-radius: 999px;
+      border: 1px solid rgba(1, 105, 111, 0.2);
+      padding: 9px 16px;
+      font-size: 0.95rem;
+      background: #ffffff;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    button.primary {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+    button:hover {
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(1, 105, 111, 0.18);
+    }
+    #status {
+      margin-top: 18px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      word-break: break-word;
+      white-space: pre-line;
+    }
+    a.inline-link {
+      color: var(--primary);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <header>
+      <div class="logo-mark" aria-hidden="true">XG</div>
+      <div>
+        <h1>Demo XGPostiz × TikTok</h1>
+        <p class="tagline">Fluxo mínimo para demonstrar Login Kit + Content Posting API.</p>
+      </div>
+    </header>
+
+    <section class="body">
+      <div class="pill"><span></span>Sandbox demo</div>
+      <p>
+        Esta página demonstra, de forma mínima, o fluxo de autenticação com TikTok e o envio
+        de um vídeo de teste pela Content Posting API, conforme a documentação oficial.
+      </p>
+      <ul class="step-list">
+        <li>Conectar com TikTok usando OAuth v2 e os scopes solicitados.</li>
+        <li>Trocar o <code>code</code> por um <code>access_token</code> no backend.</li>
+        <li>Disparar o upload de um vídeo de teste para a inbox da conta conectada.</li>
+      </ul>
+
+      <div class="buttons">
+        <button class="primary" id="btn-auth">1. Conectar com TikTok</button>
+        <button id="btn-upload">2. Enviar vídeo de teste</button>
+      </div>
+
+      <div id="status">Aguardando ação…</div>
+
+      <p style="margin-top:18px;font-size:0.82rem;color:var(--muted);">
+        OBS: por padrão, esta página assume que o backend está rodando em
+        <code>http://localhost:8000</code>. Ajuste a constante <code>API_BASE</code> no código
+        desta página para apontar para o domínio em produção quando estiver pronto.
+      </p>
+
+      <p style="margin-top:10px;font-size:0.82rem;color:var(--muted);">
+        Termos e política: <a class="inline-link" href="./tos.html" target="_blank" rel="noopener noreferrer">Termos de Uso</a>
+        · <a class="inline-link" href="./privacy.html" target="_blank" rel="noopener noreferrer">Privacidade</a>
+      </p>
+    </section>
+  </main>
+
+  <script>
+    const API_BASE = 'http://localhost:8000'; // ajuste para o domínio do backend em produção
+
+    const statusEl = document.getElementById('status');
+    const btnAuth = document.getElementById('btn-auth');
+    const btnUpload = document.getElementById('btn-upload');
+
+    btnAuth.addEventListener('click', () => {
+      statusEl.textContent = 'Redirecionando para TikTok…';
+      // redireciona o navegador para o endpoint /auth do backend
+      window.location.href = API_BASE + '/auth';
+    });
+
+    btnUpload.addEventListener('click', async () => {
+      statusEl.textContent = 'Chamando backend para enviar vídeo de teste…';
+      try {
+        const res = await fetch(API_BASE + '/upload-test', {
+          method: 'POST'
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          statusEl.textContent = 'Erro ao enviar vídeo: ' + (data.detail || res.statusText);
+        } else {
+          statusEl.textContent = 'Upload disparado com sucesso. Resposta da API:\n' + JSON.stringify(data, null, 2);
+        }
+      } catch (err) {
+        statusEl.textContent = 'Falha ao chamar o backend: ' + err;
+      }
+    });
+  </script>
+</body>
+</html>
